@@ -10,9 +10,13 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableModel;
 
 /**
  *
@@ -25,6 +29,7 @@ public class reg extends javax.swing.JFrame {
      */
     public reg() {
         initComponents();
+        table_update();
     }
 
     /**
@@ -183,6 +188,44 @@ public class reg extends javax.swing.JFrame {
 
     Connection conn;
     PreparedStatement insert;
+    
+    
+    private void table_update() {
+        
+        int c;
+        
+         try {
+            Class.forName("com.mysql.jdbc.Driver");
+            conn = DriverManager.getConnection("jdbc:mysql://localhost/bytewise", "root", "");
+            insert = conn.prepareStatement("select * from record");
+            
+            ResultSet rs = insert.executeQuery();
+            ResultSetMetaData Rss = rs.getMetaData();
+            c = Rss.getColumnCount();
+            
+            DefaultTableModel Df = (DefaultTableModel)jTable1.getModel();
+
+            Df.setRowCount(0);
+            
+            while(rs.next()) {
+                Vector vec = new Vector();
+                
+                for(int a = 1; a <= c; a++) {
+                    vec.add(rs.getString("roll_no"));
+                    vec.add(rs.getString("name"));
+                    vec.add(rs.getString("degree"));
+                }
+                
+                Df.addRow(vec);
+            }
+            
+
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(reg.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (SQLException ex) {
+            Logger.getLogger(reg.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
 
 
     private void txtrollnoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtrollnoActionPerformed
@@ -208,6 +251,13 @@ public class reg extends javax.swing.JFrame {
             insert.executeUpdate();
             
             JOptionPane.showMessageDialog(this, "Record Added");
+            table_update();
+            
+            txtname.setText("");
+            txtrollno.setText("");
+            txtdegree.setText("");
+            
+            txtrollno.requestFocus();
 
         } catch (ClassNotFoundException ex) {
             Logger.getLogger(reg.class.getName()).log(Level.SEVERE, null, ex);
